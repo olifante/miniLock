@@ -12,7 +12,11 @@
 var u64 = function (h, l) { this.hi = h|0 >>> 0; this.lo = l|0 >>> 0; };
 var gf = function(init) {
   var i, r = new Float64Array(16);
-  if (init) for (i = 0; i < init.length; i++) r[i] = init[i];
+  if (init) {
+      for (i = 0; i < init.length; i++) {
+          r[i] = init[i];
+      }
+  }
   return r;
 };
 
@@ -61,8 +65,10 @@ function ts64(x, i, u) {
 }
 
 function vn(x, xi, y, yi, n) {
-  var i,d = 0;
-  for (i = 0; i < n; i++) d |= x[xi+i]^y[yi+i];
+  var i, d = 0;
+  for (i = 0; i < n; i++) {
+      d |= x[xi+i]^y[yi+i];
+  }
   return (1 & ((d - 1) >>> 8)) - 1;
 }
 
@@ -96,7 +102,8 @@ function core_salsa20(out, inp, k, c) {
         x8 = j8, x9 = j9, x10 = j10, x11 = j11, x12 = j12, x13 = j13, x14 = j14,
         x15 = j15, u;
 
-      for (var i = 0; i < 20; i += 2) {
+    var i;
+      for (i = 0; i < 20; i += 2) {
         u = x0 + x12 | 0;
         x4 ^= u<<7 | u>>>(32-7);
         u = x4 + x0 | 0;
@@ -226,7 +233,8 @@ function core_hsalsa20(out,inp,k,c) {
         x8 = j8, x9 = j9, x10 = j10, x11 = j11, x12 = j12, x13 = j13, x14 = j14,
         x15 = j15, u;
 
-      for (var i = 0; i < 20; i += 2) {
+    var i;
+      for (i = 0; i < 20; i += 2) {
         u = x0 + x12 | 0;
         x4 ^= u<<7 | u>>>(32-7);
         u = x4 + x0 | 0;
@@ -323,11 +331,17 @@ var sigma = new Uint8Array([101, 120, 112, 97, 110, 100, 32, 51, 50, 45, 98, 121
 function crypto_stream_salsa20_xor(c,cpos,m,mpos,b,n,k) {
   var z = new Uint8Array(16), x = new Uint8Array(64);
   var u, i;
-  for (i = 0; i < 16; i++) z[i] = 0;
-  for (i = 0; i < 8; i++) z[i] = n[i];
+  for (i = 0; i < 16; i++) {
+      z[i] = 0;
+  }
+  for (i = 0; i < 8; i++) {
+      z[i] = n[i];
+  }
   while (b >= 64) {
     crypto_core_salsa20(x,z,k,sigma);
-    for (i = 0; i < 64; i++) c[cpos+i] = m[mpos+i] ^ x[i];
+    for (i = 0; i < 64; i++) {
+        c[cpos+i] = m[mpos+i] ^ x[i];
+    }
     u = 1;
     for (i = 8; i < 16; i++) {
       u = u + (z[i] & 0xff) | 0;
@@ -340,7 +354,9 @@ function crypto_stream_salsa20_xor(c,cpos,m,mpos,b,n,k) {
   }
   if (b > 0) {
     crypto_core_salsa20(x,z,k,sigma);
-    for (i = 0; i < b; i++) c[cpos+i] = m[mpos+i] ^ x[i];
+    for (i = 0; i < b; i++) {
+        c[cpos+i] = m[mpos+i] ^ x[i];
+    }
   }
   return 0;
 }
@@ -348,11 +364,17 @@ function crypto_stream_salsa20_xor(c,cpos,m,mpos,b,n,k) {
 function crypto_stream_salsa20(c,cpos,b,n,k) {
   var z = new Uint8Array(16), x = new Uint8Array(64);
   var u, i;
-  for (i = 0; i < 16; i++) z[i] = 0;
-  for (i = 0; i < 8; i++) z[i] = n[i];
+  for (i = 0; i < 16; i++) {
+      z[i] = 0;
+  }
+  for (i = 0; i < 8; i++) {
+      z[i] = n[i];
+  }
   while (b >= 64) {
     crypto_core_salsa20(x,z,k,sigma);
-    for (i = 0; i < 64; i++) c[cpos+i] = x[i];
+    for (i = 0; i < 64; i++) {
+        c[cpos+i] = x[i];
+    }
     u = 1;
     for (i = 8; i < 16; i++) {
       u = u + (z[i] & 0xff) | 0;
@@ -364,7 +386,9 @@ function crypto_stream_salsa20(c,cpos,b,n,k) {
   }
   if (b > 0) {
     crypto_core_salsa20(x,z,k,sigma);
-    for (i = 0; i < b; i++) c[cpos+i] = x[i];
+    for (i = 0; i < b; i++) {
+        c[cpos+i] = x[i];
+    }
   }
   return 0;
 }
@@ -373,7 +397,10 @@ function crypto_stream(c,cpos,d,n,k) {
   var s = new Uint8Array(32);
   crypto_core_hsalsa20(s,n,k,sigma);
   var sn = new Uint8Array(8);
-  for (var i = 0; i < 8; i++) sn[i] = n[i+16];
+  var i;
+  for (i = 0; i < 8; i++) {
+      sn[i] = n[i+16];
+  }
   return crypto_stream_salsa20(c,cpos,d,sn,s);
 }
 
@@ -381,7 +408,10 @@ function crypto_stream_xor(c,cpos,m,mpos,d,n,k) {
   var s = new Uint8Array(32);
   crypto_core_hsalsa20(s,n,k,sigma);
   var sn = new Uint8Array(8);
-  for (var i = 0; i < 8; i++) sn[i] = n[i+16];
+  var i;
+  for (i = 0; i < 8; i++) {
+      sn[i] = n[i+16];
+  }
   return crypto_stream_salsa20_xor(c,cpos,m,mpos,d,sn,s);
 }
 
@@ -414,8 +444,10 @@ var poly1305 = function(key) {
   t7 = U8TO16(key,14); this.r[8] = ((t6 >>>  8) | (t7 <<  8)) & 0x1fff;
   this.r[9] = ((t7 >>>  5)) & 0x007f;
 
-  for (i = 0; i < 8; i++) this.pad[i] = U8TO16(key, 16 + (2 * i));
-}
+  for (i = 0; i < 8; i++) {
+      this.pad[i] = U8TO16(key, 16 + (2 * i));
+  }
+};
 
 poly1305.prototype.blocks = function(m, mpos, bytes) {
   var hibit = this.fin ? 0 : (1 << 11);
@@ -453,12 +485,14 @@ poly1305.prototype.blocks = function(m, mpos, bytes) {
     c = (c >>> 13);
     d[1] += c;
 
-    for (i = 0; i < 10; i++) this.h[i] = d[i];
+    for (i = 0; i < 10; i++) {
+        this.h[i] = d[i];
+    }
 
     mpos += 16;
     bytes -= 16;
   }
-}
+};
 
 poly1305.prototype.finish = function(mac, macpos) {
   var g = new Uint16Array(10);
@@ -467,7 +501,9 @@ poly1305.prototype.finish = function(mac, macpos) {
   if (this.leftover) {
     i = this.leftover;
     this.buffer[i++] = 1;
-    for (; i < 16; i++) this.buffer[i] = 0;
+    for (i; i < 16; i++) {
+        this.buffer[i] = 0;
+    }
     this.fin = 1;
     this.blocks(this.buffer, 0, 16);
   }
@@ -498,9 +534,13 @@ poly1305.prototype.finish = function(mac, macpos) {
   g[9] -= (1 << 13);
 
   mask = (g[9] >>> ((2 * 8) - 1)) - 1;
-  for (i = 0; i < 10; i++) g[i] &= mask;
+  for (i = 0; i < 10; i++) {
+      g[i] &= mask;
+  }
   mask = ~mask;
-  for (i = 0; i < 10; i++) this.h[i] = (this.h[i] & mask) | g[i];
+  for (i = 0; i < 10; i++) {
+      this.h[i] = (this.h[i] & mask) | g[i];
+  }
 
   this.h[0] = ((this.h[0]       ) | (this.h[1] << 13)                    ) & 0xffff;
   this.h[1] = ((this.h[1] >>>  3) | (this.h[2] << 10)                    ) & 0xffff;
@@ -518,23 +558,28 @@ poly1305.prototype.finish = function(mac, macpos) {
     this.h[i] = f & 0xffff;
   }
 
-  for (i = 0; i < 8; i++) U16TO8(mac, macpos + i*2, this.h[i]);
-}
+  for (i = 0; i < 8; i++) {
+      U16TO8(mac, macpos + i*2, this.h[i]);
+  }
+};
 
 poly1305.prototype.update = function(m, mpos, bytes) {
   var i, want;
 
   if (this.leftover) {
     want = (16 - this.leftover);
-    if (want > bytes)
-      want = bytes;
-    for (i = 0; i < want; i++)
-      this.buffer[this.leftover + i] = m[mpos+i];
+    if (want > bytes) {
+        want = bytes;
+    }
+    for (i = 0; i < want; i++) {
+        this.buffer[this.leftover + i] = m[mpos+i];
+    }
     bytes -= want;
     mpos += want;
     this.leftover += want;
-    if (this.leftover < 16)
-      return;
+    if (this.leftover < 16) {
+        return;
+    }
     this.blocks(buffer, 0, 16);
     this.leftover = 0;
   }
@@ -547,11 +592,12 @@ poly1305.prototype.update = function(m, mpos, bytes) {
   }
 
   if (bytes) {
-    for (i = 0; i < bytes; i++)
-      this.buffer[this.leftover + i] = m[mpos+i];
+    for (i = 0; i < bytes; i++) {
+        this.buffer[this.leftover + i] = m[mpos+i];
+    }
     this.leftover += bytes;
   }
-}
+};
 
 function crypto_onetimeauth(out, outpos, m, mpos, n, k) {
   var s = new poly1305(k);
@@ -568,27 +614,39 @@ function crypto_onetimeauth_verify(h, hpos, m, mpos, n, k) {
 
 function crypto_secretbox(c,m,d,n,k) {
   var i;
-  if (d < 32) return -1;
+  if (d < 32) {
+      return -1;
+  }
   crypto_stream_xor(c,0,m,0,d,n,k);
   crypto_onetimeauth(c, 16, c, 32, d - 32, c);
-  for (i = 0; i < 16; i++) c[i] = 0;
+  for (i = 0; i < 16; i++) {
+      c[i] = 0;
+  }
   return 0;
 }
 
 function crypto_secretbox_open(m,c,d,n,k) {
   var i;
   var x = new Uint8Array(32);
-  if (d < 32) return -1;
+  if (d < 32) {
+      return -1;
+  }
   crypto_stream(x,0,32,n,k);
-  if (crypto_onetimeauth_verify(c, 16,c, 32,d - 32,x) !== 0) return -1;
+  if (crypto_onetimeauth_verify(c, 16,c, 32,d - 32,x) !== 0) {
+      return -1;
+  }
   crypto_stream_xor(m,0,c,0,d,n,k);
-  for (i = 0; i < 32; i++) m[i] = 0;
+  for (i = 0; i < 32; i++) {
+      m[i] = 0;
+  }
   return 0;
 }
 
 function set25519(r, a) {
   var i;
-  for (i = 0; i < 16; i++) r[i] = a[i]|0;
+  for (i = 0; i < 16; i++) {
+      r[i] = a[i]|0;
+  }
 }
 
 function car25519(o) {
@@ -604,7 +662,8 @@ function car25519(o) {
 
 function sel25519(p, q, b) {
   var t, c = ~(b-1);
-  for (var i = 0; i < 16; i++) {
+  var i;
+  for (i = 0; i < 16; i++) {
     t = c & (p[i] ^ q[i]);
     p[i] ^= t;
     q[i] ^= t;
@@ -614,7 +673,9 @@ function sel25519(p, q, b) {
 function pack25519(o, n) {
   var i, j, b;
   var m = gf(), t = gf();
-  for (i = 0; i < 16; i++) t[i] = n[i];
+  for (i = 0; i < 16; i++) {
+      t[i] = n[i];
+  }
   car25519(t);
   car25519(t);
   car25519(t);
@@ -650,23 +711,31 @@ function par25519(a) {
 
 function unpack25519(o, n) {
   var i;
-  for (i = 0; i < 16; i++) o[i] = n[2*i] + (n[2*i+1] << 8);
+  for (i = 0; i < 16; i++) {
+      o[i] = n[2*i] + (n[2*i+1] << 8);
+  }
   o[15] &= 0x7fff;
 }
 
 function A(o, a, b) {
   var i;
-  for (i = 0; i < 16; i++) o[i] = (a[i] + b[i])|0;
+  for (i = 0; i < 16; i++) {
+      o[i] = (a[i] + b[i])|0;
+  }
 }
 
 function Z(o, a, b) {
   var i;
-  for (i = 0; i < 16; i++) o[i] = (a[i] - b[i])|0;
+  for (i = 0; i < 16; i++) {
+      o[i] = (a[i] - b[i])|0;
+  }
 }
 
 function M(o, a, b) {
   var i, j, t = new Float64Array(31);
-  for (i = 0; i < 31; i++) t[i] = 0;
+  for (i = 0; i < 31; i++) {
+      t[i] = 0;
+  }
   for (i = 0; i < 16; i++) {
     for (j = 0; j < 16; j++) {
       t[i+j] += a[i] * b[j];
@@ -675,7 +744,9 @@ function M(o, a, b) {
   for (i = 0; i < 15; i++) {
     t[i] += 38 * t[i+16];
   }
-  for (i = 0; i < 16; i++) o[i] = t[i];
+  for (i = 0; i < 16; i++) {
+      o[i] = t[i];
+  }
   car25519(o);
   car25519(o);
 }
@@ -687,23 +758,35 @@ function S(o, a) {
 function inv25519(o, i) {
   var c = gf();
   var a;
-  for (a = 0; a < 16; a++) c[a] = i[a];
+  for (a = 0; a < 16; a++) {
+      c[a] = i[a];
+  }
   for (a = 253; a >= 0; a--) {
     S(c, c);
-    if(a !== 2 && a !== 4) M(c, c, i);
+    if(a !== 2 && a !== 4) {
+        M(c, c, i);
+    }
   }
-  for (a = 0; a < 16; a++) o[a] = c[a];
+  for (a = 0; a < 16; a++) {
+      o[a] = c[a];
+  }
 }
 
 function pow2523(o, i) {
   var c = gf();
   var a;
-  for (a = 0; a < 16; a++) c[a] = i[a];
+  for (a = 0; a < 16; a++) {
+      c[a] = i[a];
+  }
   for (a = 250; a >= 0; a--) {
       S(c, c);
-      if(a !== 1) M(c, c, i);
+      if(a !== 1) {
+          M(c, c, i);
+      }
   }
-  for (a = 0; a < 16; a++) o[a] = c[a];
+  for (a = 0; a < 16; a++) {
+      o[a] = c[a];
+  }
 }
 
 function crypto_scalarmult(q, n, p) {
@@ -711,7 +794,9 @@ function crypto_scalarmult(q, n, p) {
   var x = new Float64Array(80), r, i;
   var a = gf(), b = gf(), c = gf(),
       d = gf(), e = gf(), f = gf();
-  for (i = 0; i < 31; i++) z[i] = n[i];
+  for (i = 0; i < 31; i++) {
+      z[i] = n[i];
+  }
   z[31]=(n[31]&127)|64;
   z[0]&=248;
   unpack25519(x,p);
@@ -893,17 +978,25 @@ var K = [
 function crypto_hashblocks(x, m, n) {
   var z = [], b = [], a = [], w = [], t, i, j;
 
-  for (i = 0; i < 8; i++) z[i] = a[i] = dl64(x, 8*i);
+  for (i = 0; i < 8; i++) {
+      z[i] = a[i] = dl64(x, 8*i);
+  }
 
   var pos = 0;
   while (n >= 128) {
-    for (i = 0; i < 16; i++) w[i] = dl64(m, 8*i+pos);
+    for (i = 0; i < 16; i++) {
+        w[i] = dl64(m, 8*i+pos);
+    }
     for (i = 0; i < 80; i++) {
-      for (j = 0; j < 8; j++) b[j] = a[j];
+      for (j = 0; j < 8; j++) {
+          b[j] = a[j];
+      }
       t = add64(a[7], Sigma1(a[4]), Ch(a[4], a[5], a[6]), K[i], w[i%16]);
       b[7] = add64(t, Sigma0(a[0]), Maj(a[0], a[1], a[2]));
       b[3] = add64(b[3], t);
-      for (j = 0; j < 8; j++) a[(j+1)%8] = b[j];
+      for (j = 0; j < 8; j++) {
+          a[(j+1)%8] = b[j];
+      }
       if (i%16 === 15) {
         for (j = 0; j < 16; j++) {
           w[j] = add64(w[j], w[(j+9)%16], sigma0(w[(j+1)%16]), sigma1(w[(j+14)%16]));
@@ -920,7 +1013,9 @@ function crypto_hashblocks(x, m, n) {
     n -= 128;
   }
 
-  for (i = 0; i < 8; i++) ts64(x, 8*i, z[i]);
+  for (i = 0; i < 8; i++) {
+      ts64(x, 8*i, z[i]);
+  }
   return n;
 }
 
@@ -939,13 +1034,19 @@ function crypto_hash(out, m, n) {
   var h = new Uint8Array(64), x = new Uint8Array(256);
   var i, b = n;
 
-  for (i = 0; i < 64; i++) h[i] = iv[i];
+  for (i = 0; i < 64; i++) {
+      h[i] = iv[i];
+  }
 
   crypto_hashblocks(h, m, n);
   n %= 128;
 
-  for (i = 0; i < 256; i++) x[i] = 0;
-  for (i = 0; i < n; i++) x[i] = m[b-n+i];
+  for (i = 0; i < 256; i++) {
+      x[i] = 0;
+  }
+  for (i = 0; i < n; i++) {
+      x[i] = m[b-n+i];
+  }
   x[n] = 128;
 
   n = 256-128*(n<112?1:0);
@@ -953,7 +1054,9 @@ function crypto_hash(out, m, n) {
   ts64(x, n-8, new u64((b / 0x20000000) | 0, b << 3));
   crypto_hashblocks(h, x, n);
 
-  for (i = 0; i < 64; i++) out[i] = h[i];
+  for (i = 0; i < 64; i++) {
+      out[i] = h[i];
+  }
 
   return 0;
 }
@@ -1038,7 +1141,9 @@ function crypto_sign_keypair(pk, sk) {
   scalarbase(p, d);
   pack(pk, p);
 
-  for (i = 0; i < 32; i++) sk[i+32] = pk[i];
+  for (i = 0; i < 32; i++) {
+      sk[i+32] = pk[i];
+  }
   return 0;
 }
 
@@ -1062,7 +1167,9 @@ function modL(r, x) {
     carry = x[j] >> 8;
     x[j] &= 255;
   }
-  for (j = 0; j < 32; j++) x[j] -= carry * L[j];
+  for (j = 0; j < 32; j++) {
+      x[j] -= carry * L[j];
+  }
   for (i = 0; i < 32; i++) {
     x[i+1] += x[i] >> 8;
     r[i] = x[i] & 255;
@@ -1071,8 +1178,12 @@ function modL(r, x) {
 
 function reduce(r) {
   var x = new Float64Array(64), i;
-  for (i = 0; i < 64; i++) x[i] = r[i];
-  for (i = 0; i < 64; i++) r[i] = 0;
+  for (i = 0; i < 64; i++) {
+      x[i] = r[i];
+  }
+  for (i = 0; i < 64; i++) {
+      r[i] = 0;
+  }
   modL(r, x);
 }
 
@@ -1088,20 +1199,30 @@ function crypto_sign(sm, m, n, sk) {
   d[31] |= 64;
 
   var smlen = n + 64;
-  for (i = 0; i < n; i++) sm[64 + i] = m[i];
-  for (i = 0; i < 32; i++) sm[32 + i] = d[32 + i];
+  for (i = 0; i < n; i++) {
+      sm[64 + i] = m[i];
+  }
+  for (i = 0; i < 32; i++) {
+      sm[32 + i] = d[32 + i];
+  }
 
   crypto_hash(r, sm.subarray(32), n+32);
   reduce(r);
   scalarbase(p, r);
   pack(sm, p);
 
-  for (i = 32; i < 64; i++) sm[i] = sk[i];
+  for (i = 32; i < 64; i++) {
+      sm[i] = sk[i];
+  }
   crypto_hash(h, sm, n + 64);
   reduce(h);
 
-  for (i = 0; i < 64; i++) x[i] = 0;
-  for (i = 0; i < 32; i++) x[i] = r[i];
+  for (i = 0; i < 64; i++) {
+      x[i] = 0;
+  }
+  for (i = 0; i < 32; i++) {
+      x[i] = r[i];
+  }
   for (i = 0; i < 32; i++) {
     for (j = 0; j < 32; j++) {
       x[i+j] += h[i] * d[j];
@@ -1138,13 +1259,19 @@ function unpackneg(r, p) {
 
   S(chk, r[0]);
   M(chk, chk, den);
-  if (neq25519(chk, num)) M(r[0], r[0], I);
+  if (neq25519(chk, num)) {
+      M(r[0], r[0], I);
+  }
 
   S(chk, r[0]);
   M(chk, chk, den);
-  if (neq25519(chk, num)) return -1;
+  if (neq25519(chk, num)) {
+      return -1;
+  }
 
-  if (par25519(r[0]) === (p[31]>>7)) Z(r[0], gf0, r[0]);
+  if (par25519(r[0]) === (p[31]>>7)) {
+      Z(r[0], gf0, r[0]);
+  }
 
   M(r[3], r[0], r[1]);
   return 0;
@@ -1157,12 +1284,20 @@ function crypto_sign_open(m, sm, n, pk) {
       q = [gf(), gf(), gf(), gf()];
 
   mlen = -1;
-  if (n < 64) return -1;
+  if (n < 64) {
+      return -1;
+  }
 
-  if (unpackneg(q, pk)) return -1;
+  if (unpackneg(q, pk)) {
+      return -1;
+  }
 
-  for (i = 0; i < n; i++) m[i] = sm[i];
-  for (i = 0; i < 32; i++) m[i+32] = pk[i];
+  for (i = 0; i < n; i++) {
+      m[i] = sm[i];
+  }
+  for (i = 0; i < 32; i++) {
+      m[i+32] = pk[i];
+  }
   crypto_hash(h, m, n);
   reduce(h);
   scalarmult(p, q, h);
@@ -1173,11 +1308,15 @@ function crypto_sign_open(m, sm, n, pk) {
 
   n -= 64;
   if (crypto_verify_32(sm, 0, t, 0)) {
-    for (i = 0; i < n; i++) m[i] = 0;
+    for (i = 0; i < n; i++) {
+        m[i] = 0;
+    }
     return -1;
   }
 
-  for (i = 0; i < n; i++) m[i] = sm[i + 64];
+  for (i = 0; i < n; i++) {
+      m[i] = sm[i + 64];
+  }
   mlen = n;
   return mlen;
 }
@@ -1244,20 +1383,30 @@ nacl.lowlevel = {
 /* High-level API */
 
 function checkLengths(k, n) {
-  if (k.length !== crypto_secretbox_KEYBYTES) throw new Error('bad key size');
-  if (n.length !== crypto_secretbox_NONCEBYTES) throw new Error('bad nonce size');
+  if (k.length !== crypto_secretbox_KEYBYTES) {
+      throw new Error('bad key size');
+  }
+  if (n.length !== crypto_secretbox_NONCEBYTES) {
+      throw new Error('bad nonce size');
+  }
 }
 
 function checkBoxLengths(pk, sk) {
-  if (pk.length !== crypto_box_PUBLICKEYBYTES) throw new Error('bad public key size');
-  if (sk.length !== crypto_box_SECRETKEYBYTES) throw new Error('bad secret key size');
+  if (pk.length !== crypto_box_PUBLICKEYBYTES) {
+      throw new Error('bad public key size');
+  }
+  if (sk.length !== crypto_box_SECRETKEYBYTES) {
+      throw new Error('bad secret key size');
+  }
 }
 
 function checkArrayTypes() {
   var type = {}.toString, t;
-  for (var i = 0; i < arguments.length; i++) {
-     if ((t = type.call(arguments[i])) !== '[object Uint8Array]')
-       throw new TypeError('unexpected type ' + t + ', use Uint8Array');
+  var i;
+  for (i = 0; i < arguments.length; i++) {
+     if ((t = type.call(arguments[i])) !== '[object Uint8Array]') {
+         throw new TypeError('unexpected type ' + t + ', use Uint8Array');
+     }
   }
 }
 
@@ -1265,13 +1414,17 @@ nacl.util = {};
 
 nacl.util.decodeUTF8 = function(s) {
   var i, d = unescape(encodeURIComponent(s)), b = new Uint8Array(d.length);
-  for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
+  for (i = 0; i < d.length; i++) {
+      b[i] = d.charCodeAt(i);
+  }
   return b;
 };
 
 nacl.util.encodeUTF8 = function(arr) {
   var i, s = [];
-  for (i = 0; i < arr.length; i++) s.push(String.fromCharCode(arr[i]));
+  for (i = 0; i < arr.length; i++) {
+      s.push(String.fromCharCode(arr[i]));
+  }
   return decodeURIComponent(escape(s.join('')));
 };
 
@@ -1280,7 +1433,9 @@ nacl.util.encodeBase64 = function(arr) {
     return (new Buffer(arr)).toString('base64');
   } else {
     var i, s = [], len = arr.length;
-    for (i = 0; i < len; i++) s.push(String.fromCharCode(arr[i]));
+    for (i = 0; i < len; i++) {
+        s.push(String.fromCharCode(arr[i]));
+    }
     return btoa(s.join(''));
   }
 };
@@ -1290,7 +1445,9 @@ nacl.util.decodeBase64 = function(s) {
     return new Uint8Array(Array.prototype.slice.call(new Buffer(s, 'base64'), 0));
   } else {
     var i, d = atob(s), b = new Uint8Array(d.length);
-    for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
+    for (i = 0; i < d.length; i++) {
+        b[i] = d.charCodeAt(i);
+    }
     return b;
   }
 };
@@ -1306,7 +1463,10 @@ nacl.secretbox = function(msg, nonce, key) {
   checkLengths(key, nonce);
   var m = new Uint8Array(crypto_secretbox_ZEROBYTES + msg.length);
   var c = new Uint8Array(m.length);
-  for (var i = 0; i < msg.length; i++) m[i+crypto_secretbox_ZEROBYTES] = msg[i];
+  var i;
+  for (i = 0; i < msg.length; i++) {
+      m[i+crypto_secretbox_ZEROBYTES] = msg[i];
+  }
   crypto_secretbox(c, m, m.length, nonce, key);
   return c.subarray(crypto_secretbox_BOXZEROBYTES);
 };
@@ -1316,9 +1476,16 @@ nacl.secretbox.open = function(box, nonce, key) {
   checkLengths(key, nonce);
   var c = new Uint8Array(crypto_secretbox_BOXZEROBYTES + box.length);
   var m = new Uint8Array(c.length);
-  for (var i = 0; i < box.length; i++) c[i+crypto_secretbox_BOXZEROBYTES] = box[i];
-  if (c.length < 32) return false;
-  if (crypto_secretbox_open(m, c, c.length, nonce, key) !== 0) return false;
+  var i;
+  for (i = 0; i < box.length; i++) {
+      c[i+crypto_secretbox_BOXZEROBYTES] = box[i];
+  }
+  if (c.length < 32) {
+      return false;
+  }
+  if (crypto_secretbox_open(m, c, c.length, nonce, key) !== 0) {
+      return false;
+  }
   return m.subarray(crypto_secretbox_ZEROBYTES);
 };
 
@@ -1328,8 +1495,12 @@ nacl.secretbox.overheadLength = crypto_secretbox_BOXZEROBYTES;
 
 nacl.scalarMult = function(n, p) {
   checkArrayTypes(n, p);
-  if (n.length !== crypto_scalarmult_SCALARBYTES) throw new Error('bad n size');
-  if (p.length !== crypto_scalarmult_BYTES) throw new Error('bad p size');
+  if (n.length !== crypto_scalarmult_SCALARBYTES) {
+      throw new Error('bad n size');
+  }
+  if (p.length !== crypto_scalarmult_BYTES) {
+      throw new Error('bad p size');
+  }
   var q = new Uint8Array(crypto_scalarmult_BYTES);
   crypto_scalarmult(q, n, p);
   return q;
@@ -1337,7 +1508,9 @@ nacl.scalarMult = function(n, p) {
 
 nacl.scalarMult.base = function(n) {
   checkArrayTypes(n);
-  if (n.length !== crypto_scalarmult_SCALARBYTES) throw new Error('bad n size');
+  if (n.length !== crypto_scalarmult_SCALARBYTES) {
+      throw new Error('bad n size');
+  }
   var q = new Uint8Array(crypto_scalarmult_BYTES);
   crypto_scalarmult_base(q, n);
   return q;
@@ -1377,8 +1550,9 @@ nacl.box.keyPair = function() {
 
 nacl.box.keyPair.fromSecretKey = function(secretKey) {
   checkArrayTypes(secretKey);
-  if (secretKey.length !== crypto_box_SECRETKEYBYTES)
-    throw new Error('bad secret key size');
+  if (secretKey.length !== crypto_box_SECRETKEYBYTES) {
+      throw new Error('bad secret key size');
+  }
   var pk = new Uint8Array(crypto_box_PUBLICKEYBYTES);
   crypto_scalarmult_base(pk, secretKey);
   return {publicKey: pk, secretKey: secretKey};
@@ -1392,8 +1566,9 @@ nacl.box.overheadLength = nacl.secretbox.overheadLength;
 
 nacl.sign = function(msg, secretKey) {
   checkArrayTypes(msg, secretKey);
-  if (secretKey.length !== crypto_sign_SECRETKEYBYTES)
-    throw new Error('bad secret key size');
+  if (secretKey.length !== crypto_sign_SECRETKEYBYTES) {
+      throw new Error('bad secret key size');
+  }
   var signedMsg = new Uint8Array(crypto_sign_BYTES+msg.length);
   crypto_sign(signedMsg, msg, msg.length, secretKey);
   return signedMsg;
@@ -1409,28 +1584,36 @@ nacl.sign.open = function(signedMsg, publicKey) {
   var mlen = crypto_sign_open(tmp, signedMsg, signedMsg.length, publicKey);
   if (mlen < 0) return null;
   var m = new Uint8Array(mlen);
-  for (var i = 0; i < m.length; i++) m[i] = tmp[i];
+  var i;
+  for (i = 0; i < m.length; i++) m[i] = tmp[i];
   return m;
 };
 
 nacl.sign.detached = function(msg, secretKey) {
   var signedMsg = nacl.sign(msg, secretKey);
   var sig = new Uint8Array(crypto_sign_BYTES);
-  for (var i = 0; i < sig.length; i++) sig[i] = signedMsg[i];
+  var i;
+  for (i = 0; i < sig.length; i++) sig[i] = signedMsg[i];
   return sig;
 };
 
 nacl.sign.detached.verify = function(msg, sig, publicKey) {
   checkArrayTypes(msg, sig, publicKey);
-  if (sig.length !== crypto_sign_BYTES)
-    throw new Error('bad signature size');
-  if (publicKey.length !== crypto_sign_PUBLICKEYBYTES)
-    throw new Error('bad public key size');
+  if (sig.length !== crypto_sign_BYTES) {
+      throw new Error('bad signature size');
+  }
+  if (publicKey.length !== crypto_sign_PUBLICKEYBYTES) {
+      throw new Error('bad public key size');
+  }
   var sm = new Uint8Array(crypto_sign_BYTES + msg.length);
   var m = new Uint8Array(crypto_sign_BYTES + msg.length);
   var i;
-  for (i = 0; i < crypto_sign_BYTES; i++) sm[i] = sig[i];
-  for (i = 0; i < msg.length; i++) sm[i+crypto_sign_BYTES] = msg[i];
+  for (i = 0; i < crypto_sign_BYTES; i++) {
+      sm[i] = sig[i];
+  }
+  for (i = 0; i < msg.length; i++) {
+      sm[i+crypto_sign_BYTES] = msg[i];
+  }
   return (crypto_sign_open(m, sm, sm.length, publicKey) >= 0);
 };
 
@@ -1443,11 +1626,14 @@ nacl.sign.keyPair = function() {
 
 nacl.sign.keyPair.fromSecretKey = function(secretKey) {
   checkArrayTypes(secretKey);
-  if (secretKey.length !== crypto_sign_SECRETKEYBYTES)
-    throw new Error('bad secret key size');
+  if (secretKey.length !== crypto_sign_SECRETKEYBYTES) {
+      throw new Error('bad secret key size');
+  }
   var pk = new Uint8Array(crypto_sign_PUBLICKEYBYTES);
   var i;
-  for (i = 0; i < 32; i++) pk[i] = secretKey[32+i];
+  for (i = 0; i < 32; i++) {
+      pk[i] = secretKey[32+i];
+  }
   return {publicKey: pk, secretKey: secretKey};
 };
 
@@ -1467,9 +1653,13 @@ nacl.hash.hashLength = crypto_hash_BYTES;
 nacl.verify = function(x, y) {
   checkArrayTypes(x, y);
   // Zero length arguments are considered not equal.
-  if (x.length === 0 || y.length === 0) return false;
-  if (x.length !== y.length) return false;
-  return (vn(x, 0, y, 0, x.length) === 0) ? true : false;
+  if (x.length === 0 || y.length === 0) {
+      return false;
+  }
+  if (x.length !== y.length) {
+      return false;
+  }
+  return (vn(x, 0, y, 0, x.length) === 0);
 };
 
 nacl.setPRNG = function(fn) {
@@ -1491,7 +1681,9 @@ nacl.setPRNG = function(fn) {
       nacl.setPRNG(function(x, n) {
         var i, v = new Uint8Array(n);
         crypto.getRandomValues(v);
-        for (i = 0; i < n; i++) x[i] = v[i];
+        for (i = 0; i < n; i++) {
+            x[i] = v[i];
+        }
       });
     }
   } else if (typeof require !== 'undefined') {
@@ -1500,10 +1692,12 @@ nacl.setPRNG = function(fn) {
     if (crypto) {
       nacl.setPRNG(function(x, n) {
         var i, v = crypto.randomBytes(n);
-        for (i = 0; i < n; i++) x[i] = v[i];
+        for (i = 0; i < n; i++) {
+            x[i] = v[i];
+        }
       });
     }
   }
-})();
+}());
 
-})(typeof module !== 'undefined' && module.exports ? module.exports : (window.nacl = window.nacl || {}));
+}(typeof module !== 'undefined' && module.exports ? module.exports : (window.nacl = window.nacl || {})));

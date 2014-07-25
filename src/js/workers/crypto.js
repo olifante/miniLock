@@ -33,6 +33,7 @@ var base58Match = new RegExp(
 // Output: Boolean
 // Notes: Validates if string is a proper miniLock ID.
 var validateID = function(id) {
+	'use strict'
 	if (
 		(id.length > 55) ||
 		(id.length < 40)
@@ -57,6 +58,7 @@ var validateID = function(id) {
 // Output: Boolean
 // Notes: Validates if string is a proper nonce.
 var validateNonce = function(nonce, expectedLength) {
+    'use strict'
 	if (
 		(nonce.length > 40) ||
 		(nonce.length < 10)
@@ -74,6 +76,7 @@ var validateNonce = function(nonce, expectedLength) {
 // Output: Boolean
 // Notes: Validates if string is a proper symmetric key.
 var validateKey = function(key) {
+	'use strict'
 	if (
 		(key.length > 50) ||
 		(key.length < 40)
@@ -92,8 +95,10 @@ var validateEphemeral = validateKey
 // Input: Number
 // Output: Number as 4-byte Uint8Array
 var numberToByteArray = function(n) {
+    'use strict'
     var byteArray = [0, 0, 0, 0]
-    for (var i = byteArray.length - 1; i >= 0; i--) {
+    var i
+    for (i = byteArray.length - 1; i >= 0; i--) {
         byteArray[i] = n & 255
 		n = n >> 8
     }
@@ -103,8 +108,10 @@ var numberToByteArray = function(n) {
 // Input: 4-byte Uint8Array
 // Output: ByteArray converter to number
 var byteArrayToNumber = function(byteArray) {
+    'use strict'
 	var n = 0
-	for (var i = 0; i < byteArray.length; i++) {
+    var i
+	for (i = 0; i < byteArray.length; i++) {
 		n += byteArray[i]
 		if (i < byteArray.length-1) {
 			n = n << 8
@@ -138,9 +145,9 @@ var byteArrayToNumber = function(byteArray) {
 //		mySecretKey: Sender's secret key (Uint8Array)
 //	}
 // Result: When finished, the worker will return the result
-// 	which is supposed to be caught and processed by
-//	the miniLock.crypto.worker.onmessage() function
-//	in miniLock.js.
+//  which is supposed to be caught and processed by
+//  the miniLock.crypto.worker.onmessage() function
+//  in miniLock.js.
 // Notes: A miniLock-encrypted file's first 8 bytes are always the following:
 //	0x6d, 0x69, 0x6e, 0x69,
 //	0x4c, 0x6f, 0x63, 0x6b,
@@ -171,6 +178,7 @@ var byteArrayToNumber = function(byteArray) {
 //	Note that we cannot ensure the integrity of senderID unless it can be used to carry out a
 //	successful, authenticated decryption of both fileInfo and consequently the ciphertext.
 onmessage = function(message) {
+'use strict'
 message = message.data
 
 // We have received a request to encrypt
@@ -185,7 +193,8 @@ if (message.operation === 'encrypt') {
 		while (paddedFileName < 256) {
 			paddedFileName += String.fromCharCode(0x00)
 		}
-		for (var i = 0; i < message.miniLockIDs.length; i++) {
+		var i
+		for (i = 0; i < message.miniLockIDs.length; i++) {
 			var encryptedFileKey = nacl.box(
 				message.fileKey,
 				message.fileKeyNonces[i],
@@ -232,7 +241,8 @@ if (message.operation === 'encrypt') {
 			numberToByteArray(header.length),
 			header
 		]
-		for (var c = 0; c < message.data.length; c += chunkSize) {
+        var c
+		for (c = 0; c < message.data.length; c += chunkSize) {
 			var encryptedChunk
 			if (c >= (message.data.length - chunkSize)) {
 				encryptedChunk = streamEncryptor.encryptChunk(
@@ -271,7 +281,7 @@ if (message.operation === 'encrypt') {
 			callback: message.callback
 		})
 		encrypted = null
-	})()
+	}())
 }
 
 
@@ -292,7 +302,7 @@ if (message.operation === 'decrypt') {
 				message.data.length
 			)
 		}
-		catch(error) {
+		catch(error1) {
 			postMessage({
 				operation: 'decrypt',
 				error: 3
@@ -327,7 +337,9 @@ if (message.operation === 'decrypt') {
 		var actualFileKey   = null
 		var actualFileName  = null
 		var actualFileNonce = null
-		for (var i in header.fileInfo) {
+        var i
+        /*jslint forin: true */
+		for (i in header.fileInfo) {
 			if (
 				({}).hasOwnProperty.call(header.fileInfo, i)
 				&& validateNonce(i, 24)
@@ -335,7 +347,7 @@ if (message.operation === 'decrypt') {
 				try {
 					nacl.util.decodeBase64(header.fileInfo[i])
 				}
-				catch(err) {
+				catch(error2) {
 					postMessage({
 						operation: 'decrypt',
 						error: 3
@@ -355,7 +367,7 @@ if (message.operation === 'decrypt') {
 							nacl.util.encodeUTF8(actualFileInfo)
 						)
 					}
-					catch(err) {
+					catch(error3) {
 						postMessage({
 							operation: 'decrypt',
 							error: 3
@@ -367,6 +379,7 @@ if (message.operation === 'decrypt') {
 				}
 			}
 		}
+        /*jslint forin: false */
 		if (!actualFileInfo) {
 			postMessage({
 				operation: 'decrypt',
@@ -414,7 +427,7 @@ if (message.operation === 'decrypt') {
 			actualFileName  = nacl.util.encodeUTF8(actualFileName)
 			actualFileNonce = nacl.util.decodeBase64(actualFileInfo.fileNonce)
 		}
-		catch(err) {
+		catch(error4) {
 			postMessage({
 				operation: 'decrypt',
 				error: 3
@@ -443,7 +456,8 @@ if (message.operation === 'decrypt') {
 			chunkSize
 		)
 		var decrypted = []
-		for (var c = 0; c < message.data.length; c += (4 + 16 + chunkSize)) {
+        var c
+		for (c = 0; c < message.data.length; c += (4 + 16 + chunkSize)) {
 			var decryptedChunk
 			if (c >= (message.data.length - (4 + 16 + chunkSize))) {
 				decryptedChunk = streamDecryptor.decryptChunk(
@@ -482,7 +496,7 @@ if (message.operation === 'decrypt') {
 			callback: message.callback
 		})
 		decrypted = null
-	})()
+	}())
 }
 
 }

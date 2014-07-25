@@ -21,7 +21,8 @@
   var crypto_secretbox_open = nacl.lowlevel.crypto_secretbox_open;
 
   function incrementChunkCounter(fullNonce) {
-    for (var i = 16; i < 24; i++) {
+    var i;
+    for (i = 16; i < 24; i++) {
       fullNonce[i]++;
       if (fullNonce[i]) break;
     }
@@ -32,9 +33,11 @@
   }
 
   function clean() {
-    for (var i = 0; i < arguments.length; i++) {
+    var i;
+    for (i = 0; i < arguments.length; i++) {
       var arg = arguments[i];
-      for (var j = 0; j < arg.length; j++) arg[j] = 0;
+      var j;
+      for (j = 0; j < arg.length; j++) arg[j] = 0;
     }
   }
 
@@ -69,7 +72,8 @@
     var chunkLen = chunk.length;
     if (chunkLen > this._maxChunkLength)
       throw new Error('chunk is too large: ' + chunkLen + ' / ' + this._maxChunkLength);
-    for (var i = 0; i < ZEROBYTES; i++) this._in[i] = 0;
+    var i;
+    for (i = 0; i < ZEROBYTES; i++) this._in[i] = 0;
     this._in.set(chunk, ZEROBYTES);
     if (isLast) {
       setLastChunkFlag(this._fullNonce);
@@ -115,7 +119,8 @@
     var chunkLen = readChunkLength(encryptedChunk);
     if (chunkLen < 0 || chunkLen > this._maxChunkLength) return this._fail();
     if (chunkLen + 4 + BOXZEROBYTES !== encryptedChunkLen) return this._fail();
-    for (var i = 0; i < BOXZEROBYTES; i++) this._in[i] = 0;
+    var i;
+    for (i = 0; i < BOXZEROBYTES; i++) this._in[i] = 0;
     for (i = 0; i < encryptedChunkLen-4; i++) this._in[BOXZEROBYTES+i] = encryptedChunk[i+4];
     if (isLast) {
       setLastChunkFlag(this._fullNonce);

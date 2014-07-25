@@ -1,5 +1,5 @@
 (function(){
-'use strict';
+'use strict'
 
 miniLock.UI = {}
 
@@ -206,7 +206,8 @@ miniLock.UI.handleFileSelection = function(file) {
 		])
 		var operation = 'decrypt'
 		var first8Bytes = (new Uint8Array(result.data)).subarray(0, 8)
-		for (var i = 0; i < first8Bytes.length; i++) {
+        var i
+		for (i = 0; i < first8Bytes.length; i++) {
 			if (first8Bytes[i] !== miniLockFileYes[i]) {
 				operation = 'encrypt'
 			}
@@ -477,7 +478,7 @@ $('form.process').on('submit', function(event) {
 			miniLock.session.keys.secretKey,
 			'miniLock.crypto.workerEncryptionCallback'
 		)
-		$('form.process').trigger('encrypt:start', miniLock.UI.readFile)
+		$('form.process').trigger('encrypt:start', miniLock.UI.readFile);
 		delete miniLock.UI.readFile
 	}
 })
@@ -623,14 +624,14 @@ miniLock.UI.expireLinkToSaveFile = function() {
 // The crypto worker calls this method when a
 // decrypt or encrypt operation is complete.
 // Input: Object:
-//	{
-//		name: File name,
-//		size: File size (bytes),
-//		data: File data (Blob),
-//		type: File MIME type
-//	}
-//	operation: 'encrypt' or 'decrypt'
-//	senderID: Sender's miniLock ID (Base58)
+//  {
+//      name: File name,
+//      size: File size (bytes),
+//      data: File data (Blob),
+//      type: File MIME type
+//  }
+//  operation: 'encrypt' or 'decrypt'
+//  senderID: Sender's miniLock ID (Base58)
 miniLock.UI.fileOperationIsComplete = function(file, operation, senderID) {
 	// It seems we're limited with the number of arguments we can pass here.
 	file.senderID = senderID
@@ -693,8 +694,8 @@ miniLock.UI.getBasenameAndExtensions = function(filename) {
 
 // Input: Recipient IDs (Array), sender's miniLock ID (String)
 // Output: {
-//	senderCanDecryptFile: Whether sender can decrypt file (Boolean),
-//	totalRecipients: Number of total recipients, not including sender, if applicable (Number)
+//  senderCanDecryptFile: Whether sender can decrypt file (Boolean),
+//  totalRecipients: Number of total recipients, not including sender, if applicable (Number)
 // }
 miniLock.UI.summarizeRecipients = function(recipientIDs, myMiniLockID) {
 	var totalRecipients      = recipientIDs.length
@@ -729,8 +730,8 @@ miniLock.UI.summarizeRecipients = function(recipientIDs, myMiniLockID) {
 // $('form.process div.identity:first label').text('Me')
 // $('form.process div.identity:first input.code').val('8xC1iX3zKUcRn1yo2E2KyAoMvyFqE6dpecq4QHsqGVZH')
 // $('form.process').trigger(
-// 	'encrypt:setup',
-// 	{ name: 'Alice Passport Scan.jpg', size: 98320 }
+//  'encrypt:setup',
+//  { name: 'Alice Passport Scan.jpg', size: 98320 }
 // )
 
 // Quickly setup the decrypt failure screen for design work:
@@ -739,7 +740,7 @@ miniLock.UI.summarizeRecipients = function(recipientIDs, myMiniLockID) {
 // $('form.process div.input.name').addClass('activated')
 // $('form.process div.input.name b.basename').text('Alice Passport Scan.jpg')
 // $('form.process').trigger(
-// 	'decrypt:failed', 'could not validate sender ID'
+//  'decrypt:failed', 'could not validate sender ID'
 // )
 
-})()
+}())
