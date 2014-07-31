@@ -230,7 +230,7 @@ if (message.operation === 'encrypt') {
 		var encrypted = [
 			'miniLock',
 			numberToByteArray(header.length),
-			header,
+			header
 		]
 		for (var c = 0; c < message.data.length; c += chunkSize) {
 			var encryptedChunk
