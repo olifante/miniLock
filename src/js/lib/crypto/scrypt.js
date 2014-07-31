@@ -356,7 +356,7 @@ function scrypt(password, salt, logN, r, dkLen, interruptStep, callback, encodin
     }
     if (len % 3 > 0) {
       arr[arr.length-1] = '=';
-      if (len % 3 == 1) {
+      if (len % 3 === 1) {
           arr[arr.length-2] = '=';
       }
     }
@@ -382,10 +382,10 @@ function scrypt(password, salt, logN, r, dkLen, interruptStep, callback, encodin
   }
 
   // Decode strings.
-  if (typeof password == 'string') {
+  if (typeof password === 'string') {
       password = stringToUTF8Bytes(password);
   }
-  if (typeof salt == 'string') {
+  if (typeof salt === 'string') {
       salt = stringToUTF8Bytes(salt);
   }
 
@@ -474,7 +474,7 @@ function scrypt(password, salt, logN, r, dkLen, interruptStep, callback, encodin
       var result = PBKDF2_HMAC_SHA256_OneIter(password, B, dkLen);
       if (encoding === 'base64') {
         callback(bytesToBase64(result));
-      } else if (encoding == 'hex') {
+      } else if (encoding === 'hex') {
         callback(bytesToHex(result));
       } else {
         callback(result);
