@@ -1,5 +1,9 @@
 #Resources
 
+##BLAKE2s-JS
+Origin: https://github.com/dchest/blake2s-js
+License: Public domain
+
 ##bs58
 Origin: https://github.com/cryptocoinjs/bs58
 License: MIT

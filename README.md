@@ -31,7 +31,7 @@ This section outlines an example user flow in order to help demonstrate how mini
 Alice wants to send a scan of her passport to Bob. Sending it over email would compromise personal information, so Alice decided to first encrypt the scan using miniLock.
 
 Bob opens miniLock and enters his email address and passphrase. miniLock displays his miniLock ID, which is tied to his passphrase and is persistent. He sends Alice his miniLock ID, which looks something like this:
-`Uvs4PoMMK9Rkoyy5qbcnJDq6jc8MNAeVREekc6SBsXLSH`
+`3ySTY2wzyvH83iDWDb4oAUmwQi3xnX1anaP9MX3tJsuGw`
 
 Alice drags and drops her passport scan into miniLock and enters Bob's miniLock ID as the recipient. She clicks the encrypt button and sends the resulting `.minilock` file to Bob. Once Bob drags the encrypted file into miniLock, it automatically detects it as a miniLock-encrypted file destined to Bob, and decrypts and saves the passport scan on his computer.
 
@@ -40,7 +40,7 @@ miniLock uses the [zxcvbn](https://github.com/dropbox/zxcvbn) library in order t
 
 Users are encouraged to use passphrases which are easier to remember but harder to guess. If a user fails to enter a sufficiently entropic passphrase, miniLock will use a built-in dictionary of the 58,110 most common words in the English language to suggest a seven-word passphrase. This gives us a passphrase with approximately 111 bits of entropy, since 58110<sup>7</sup> ~= 2<sup>111</sup>.
 
-Once we obtain a suitable passphrase, we hash it using `SHA-512` and then derive the user's 32-byte private key by applying `scrypt` onto the obtained hash using the following parameters:
+Once we obtain a suitable passphrase, we hash it using `BLAKE2` and pass the resulting 32 bytes through `scrypt` in order to obtain the user's private `curve25519` key. `scrypt` is invoked using the following parameters::
 
 * N = 2<sup>17</sup>
 * r = 8,
@@ -51,7 +51,7 @@ miniLock uses the email address entered by the user as the `scrypt` key derivati
 
 Once we obtain our 32-byte private key, the public key is derived for use with the TweetNaCL `curve25519-xsalsa20-poly1305` construction.
 
-The user's `miniLock ID` consists of 33 bytes. The first 32 bytes are the user's `curve25519` public key. The last byte acts as a checksum: it is derived by hashing the first 32 bytes with `SHA-512` and truncating the resulting hash to its first byte. After constructing the 33 bytes of the miniLock ID, it is encoded into a Base58 representation, meant to be easily communicable via email or instant messaging.
+The user's `miniLock ID` consists of 33 bytes. The first 32 bytes are the user's `curve25519` public key. The last byte acts as a checksum: it is derived by hashing the first 32 bytes with `BLAKE2` set to a 1-byte output. After constructing the 33 bytes of the miniLock ID, it is encoded into a Base58 representation, meant to be easily communicable via email or instant messaging.
 
 
 ###3. File format
@@ -76,29 +76,24 @@ The header itself is a stringified JSON object which contains information necess
 ```json
 {
 version: Version of the miniLock protocol used for this file (Currently 1) (Number)
-ephemeral: Public key from ephemeral key pair used to encrypt fileInfo object (Base64),
-fileInfo: {
+ephemeral: Public key from ephemeral key pair used to encrypt decryptInfo object (Base64),
+decryptInfo: {
 	(One copy of the below object for every recipient)
 	Unique nonce for decrypting this object (Base64): {
-		fileKey: {
-			data: Key for file decryption, encrypted using long-term secret key to recipient's long-term public key (Base64),
-			nonce: Unique nonce for the above (Base64)
-		}
-		fileName: {
-			data: Original filname, encrypted using long-term secret key to recipient's long-term public key (Base64),
-			nonce: Unique nonce for the above (Base64)
-		}
-		fileNonce: Nonce for file decryption (Base64),
-		senderID: Sender's miniLock ID (Base58)
-	}
-	(Encrypted with shared secret derived from the sender’s
-	 private ephemeral key and recipient's long-term public key.
-	 Stored as Base64 string.)
-}
+		senderID: Sender's miniLock ID (Base58),
+		fileInfo: {
+			fileKey: Key for file decryption (Base64),
+			fileNonce: Nonce for file decryption (Base64),
+			fileName: File's original filename (padded, see notes) (String),
+			fileHash: BLAKE2 hash (32 bytes) of the ciphertext bytes. (Base64)
+		} (fileInfo is encrypted to recipient's public key using long-term key pair) (Base64),
+	} (encrypted to recipient's public key using ephemeral key pair) (Base64)
 }
 ```
 
-Note that in the above header, `fileName` is padded with the `0x00` byte until it reaches 256 bytes in length. This is done in order to prevent the discovery of the `fileName` length purely by analyzing an encrypted miniLock file's header.
+Note that in the above header, `fileName` is padded with the `0x00` byte until it reaches 256 bytes in length.
+
+Note that the nonce used to encrypt `decryptInfo` is the same as the one used to encrypt `fileInfo`. Nonce reuse in this scenario is permitted since we are encrypting using different keys.
 
 ###4. File encryption
 The sender begins by generating a new ephemeral `curve25519` key pair, `senderEphemeralSecret` and `senderEphemeralPublic`.
@@ -109,7 +104,7 @@ A recipient `a`'s long-term keys are denoted as `recipientSecret[a]` and `recipi
 
 The sender appends the bytes signalling the beginning of the header to the final encrypted file.
 
-A random 32-byte `fileKey` and a random 16-byte `fileNonce` are generated and used to symmetrically encrypt the plaintext bytes using TweetNaCL's `xsalsa20-poly1305` construction. We encrypt the plaintext bytes by splitting the plaintext into 8388608-byte chunks. Each chunk is then encrypted using the following model:
+A random 32-byte `fileKey` and a random 16-byte `fileNonce` are generated and used to symmetrically encrypt the plaintext bytes using TweetNaCL's `xsalsa20-poly1305` construction. We encrypt the plaintext bytes by splitting the plaintext into 1048576-byte chunks. Each chunk is then encrypted using the following model:
 
 ```javascript
 fullNonce0 = fileNonce || 0
@@ -127,20 +122,20 @@ fullNonceN = fileNonce || setMostSignificantBit(N)
 encryptedChunkN = length(chunkN) || nacl.secretbox(chunkN, fullNonceN, fileKey)
 ```
 
-For every recipient `n`, the sender encrypts `fileKey` and `fileName` (the file's intended name upon decryption) using `senderSecret` and `recipientPublic[n]` and stores them within a `fileInfo` object inside the JSON header along with `fileNonce` and `senderID`, as described in §3.
+The sender generates a `fileInfo` JSON object containing `fileKey`, `fileNonce`, `fileName` and `fileHash`. For every recipient `n`, the sender encrypts `fileInfo` using `senderSecret` and `recipientPublic[n]` and stores it within a `decryptInfo` object inside the JSON header along with `senderID`, as described in §3.
 
-The name of the `fileInfo` property in which the aforementioned elements are stored is a 24-byte nonce. The sender uses this nonce, along with `senderEphemeralSecret`, to encrypt the underlying JSON object asymmetrically to `senderPublic`, using TweetNaCL's `curve25519-xsalsa20-poly1305` construction. Note that this is done once for every recipient, creating a different `fileInfo` object for every recipient, each labeled by their unique nonces.
+The name of the `decryptInfo` property in which the aforementioned elements are stored is a 24-byte nonce. The sender uses this nonce, along with `senderEphemeralSecret`, to encrypt the underlying JSON object asymmetrically to `recipientPublic[n]`, using TweetNaCL's `curve25519-xsalsa20-poly1305` construction. Note that this is done once for every recipient, creating a different `decryptInfo` object for every recipient, each labeled by their unique nonces.
 
 Finally, the sender appends the bytes signalling the end of the header, followed by the ciphertext bytes.
 
 TweetNaCL's `curve25519-xsalsa20-poly1305` construction provides authenticated encryption, guaranteeing both confidentiality and ciphertext integrity. The above header construction makes it impossible to determine the sender or recipient(s) of a miniLock-encrypted file simply by analyzing the ciphertext.
 
 ###5. File decryption
-In order to decrypt the file, the recipient needs the information stored within the `fileInfo` section of the header. They also will need the `ephemeral` property of the header in order to derive the shared secret, in conjunction with their long-term secret key, which can be used to decrypt their copy of the `fileInfo` header object.
+In order to decrypt the file, the recipient needs the information stored within the `decryptInfo` section of the header. They also will need the `ephemeral` property of the header in order to derive the shared secret, in conjunction with their long-term secret key, which can be used to decrypt their copy of the `decryptInfo` header object.
 
-If there are multiple properties within `fileInfo`, the recipient must iterate through every property until she obtains an authenticated decryption of the underlying object. Once a successful authenticated decryption of a `fileInfo` property occurs, the recipient can then use the obtained `senderID` along with their long-term secret key to decrypt `fileKey` and use it in conjunction with `fileNonce` to perform an authenticated decryption of the ciphertext bytes.
+If there are multiple properties within `decryptInfo`, the recipient must iterate through every property until she obtains an authenticated decryption of the underlying object. Once a successful authenticated decryption of a `decryptInfo` property occurs, the recipient can then use the obtained `senderID` along with their long-term secret key to decrypt `fileKey` and use it in conjunction with `fileNonce` to perform an authenticated decryption of the ciphertext bytes.
 
-In order to decrypt the ciphertext bytes, the recipient breaks the ciphertext down to chunks of 8388628 bytes: the original 8388608 bytes of the plaintext chunk, plus the 4 bytes defining the chunk length and the 16 bytes defining the `poly1305` authentication code of that particular ciphertext chunk. Each chunk is then decrypted sequentially using the following model:
+In order to decrypt the ciphertext bytes, the recipient breaks the ciphertext down to chunks consisting of the original 1048576 bytes of the plaintext chunk, plus the 4 bytes defining the chunk length and the 16 bytes defining the `poly1305` authentication code of that particular ciphertext chunk. Each chunk is then decrypted sequentially using the following model:
 
 ```javascript
 fullNonce0 = fileNonce || 0
@@ -150,7 +145,9 @@ decryptedChunk1 = nacl.secretbox.open(chunk1, fullNonce1, fileKey)
 ...
 ```
 
-The recipient then decrypts `fileName` (again using `senderID`), and removes the padding of `0x00` bytes from the decrypted `fileName` in order to obtain the intended file name. The recipient is now capable of saving the decrypted file.
+Before any file decryption, we compare the 32-byte `BLAKE2` hash of the ciphertext against the decrypted `fileHash`.
+
+The recipient then removes the padding of `0x00` bytes from the decrypted `fileName` in order to obtain the intended file name. The recipient is now capable of saving the decrypted file.
 
 If the authenticated asymmetric decryption of any header object fails, or the authenticated symmetric decryption of the file ciphertext fails, we return an error to the user and halt decryption. No partial data is returned.
 
@@ -169,6 +166,7 @@ miniLock will output these error codes when running into encryption or decryptio
 * `Error 4`: Invalid header version
 * `Error 5`: Could not validate sender ID
 * `Error 6`: File is not encrypted for this recipient
+* `Error 7`: Could not validate ciphertext hash
 
 ###8. Caveats
 miniLock is not intended to protect against malicious files being sent and received. It is the user's responsibility to vet the safety of the files they send or receive over miniLock. miniLock cannot protect against malware being sent over it.

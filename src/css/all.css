@@ -111,7 +111,6 @@ div.squareContainer {
 	-o-perspective: 1000;
 	perspective: 1000;
 	margin: 0;
-	backface-visibility: hidden;
 }
 
 div.squareContainer.flip div.square {
@@ -119,7 +118,6 @@ div.squareContainer.flip div.square {
 	-moz-transform: rotateY(-180deg);
 	-o-transform: rotateY(-180deg);
 	transform: rotateY(-180deg);
-	backface-visibility: hidden;
 }
 
 div.squareContainer, div.squareFront, div.squareBack {
@@ -138,7 +136,6 @@ div.square {
 	transform-style: preserve-3d;
 	position: relative;
 	border-radius: 2px;
-	backface-visibility: hidden;
 }
 
 div.squareFront, div.squareBack {

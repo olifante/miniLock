@@ -62,7 +62,9 @@
 		"onmessage":             true,
 		"scrypt":                true,
 		"QUnit":                 true,
-		"Base58":                true
+		"Base58":                true,
+		"FileReaderSync":        true,
+		"BLAKE2s":               true
 	}
 
 }
