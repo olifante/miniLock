@@ -43,7 +43,7 @@
     if (data.length < offset + 4) return -1;
     return data[offset] | data[offset+1] << 8 |
            data[offset+2] << 16 | data[offset+3] << 24;
-  };
+  }
 
 
   function checkArgs(key, nonce, maxChunkLength) {
