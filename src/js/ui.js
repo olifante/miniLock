@@ -701,7 +701,7 @@ miniLock.UI.getBasenameAndExtensions = function(filename) {
 // }
 miniLock.UI.summarizeRecipients = function(recipientIDs, myMiniLockID) {
 	var totalRecipients      = recipientIDs.length
-	var senderCanDecryptFile = recipientIDs.indexOf(myMiniLockID) === -1 ? false : true
+	var senderCanDecryptFile = recipientIDs.indexOf(myMiniLockID) !== -1
 	if (senderCanDecryptFile) {
 		totalRecipients--
 	}

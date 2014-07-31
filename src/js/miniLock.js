@@ -53,10 +53,8 @@ miniLock.util.validateID = function(id) {
 		return false
 	}
 	var hash = nacl.hash(bytes.subarray(0, 32))
-	if (hash[0] !== bytes[32]) {
-		return false
-	}
-	return true
+	return hash[0] === bytes[32];
+
 }
 
 // Input: none
