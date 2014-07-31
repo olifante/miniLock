@@ -37,7 +37,7 @@ Base58.encode = function(buffer) {
   }
 
   // deal with leading zeros
-  for (i = 0; i < buffer.length - 1 && buffer[i] == 0; i++) digits.unshift(0)
+  for (i = 0; i < buffer.length - 1 && buffer[i] === 0; i++) digits.unshift(0)
 
   return digits.map(function(digit) { return Base58.alphabet[digit] }).join('')
 }
@@ -69,6 +69,6 @@ Base58.decode = function(string) {
   }
 
   // deal with leading zeros
-  for (i = 0; i < input.length - 1 && input[i] == 0; i++) bytes.unshift(0)
+  for (i = 0; i < input.length - 1 && input[i] === 0; i++) bytes.unshift(0)
   return (new Uint8Array(bytes))
 }
