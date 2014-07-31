@@ -8,13 +8,18 @@
  */
 (function(root, f) {
 	'use strict';
-	if (typeof module !== 'undefined' && module.exports) module.exports.stream = f(require('tweetnacl/nacl-fast'));
-	else root.nacl.stream = f(root.nacl);
+	if (typeof module !== 'undefined' && module.exports) {
+        module.exports.stream = f(require('tweetnacl/nacl-fast'));
+    } else {
+        root.nacl.stream = f(root.nacl);
+    }
 
 }(this, function(nacl) {
 	'use strict';
 
-	if (!nacl) throw new Error('tweetnacl not loaded');
+	if (!nacl) {
+        throw new Error('tweetnacl not loaded');
+    }
 
 	var DEFAULT_MAX_CHUNK = 65535;
 
@@ -27,7 +32,9 @@
 		var i;
 		for (i = 16; i < 24; i++) {
 			fullNonce[i]++;
-			if (fullNonce[i]) break;
+			if (fullNonce[i]) {
+                break;
+            }
 		}
 	}
 
@@ -40,23 +47,35 @@
 		for (i = 0; i < arguments.length; i++) {
 			var arg = arguments[i];
 			var j;
-			for (j = 0; j < arg.length; j++) arg[j] = 0;
+			for (j = 0; j < arg.length; j++) {
+                arg[j] = 0;
+            }
 		}
 	}
 
 	function readChunkLength(data, offset) {
 		offset |= 0;
-		if (data.length < offset + 4) return -1;
+		if (data.length < offset + 4) {
+            return -1;
+        }
 		return data[offset] | data[offset+1] << 8 |
 			data[offset+2] << 16 | data[offset+3] << 24;
 	}
 
 
 	function checkArgs(key, nonce, maxChunkLength) {
-		if (key.length !== 32) throw new Error('bad key length, must be 32 bytes');
-		if (nonce.length !== 16) throw new Error('bad nonce length, must be 16 bytes');
-		if (maxChunkLength >= 0xffffffff) throw new Error('max chunk length is too large');
-		if (maxChunkLength < 16) throw new Error('max chunk length is too small');
+		if (key.length !== 32) {
+            throw new Error('bad key length, must be 32 bytes');
+        }
+		if (nonce.length !== 16) {
+            throw new Error('bad nonce length, must be 16 bytes');
+        }
+		if (maxChunkLength >= 0xffffffff) {
+            throw new Error('max chunk length is too large');
+        }
+		if (maxChunkLength < 16) {
+            throw new Error('max chunk length is too small');
+        }
 	}
 
 	function StreamEncryptor(key, nonce, maxChunkLength) {
@@ -71,12 +90,17 @@
 	}
 
 	StreamEncryptor.prototype.encryptChunk = function(chunk, isLast) {
-		if (this._done) throw new Error('called encryptChunk after last chunk');
+		if (this._done) {
+            throw new Error('called encryptChunk after last chunk');
+        }
 		var chunkLen = chunk.length;
-		if (chunkLen > this._maxChunkLength)
-			throw new Error('chunk is too large: ' + chunkLen + ' / ' + this._maxChunkLength);
+		if (chunkLen > this._maxChunkLength) {
+            throw new Error('chunk is too large: ' + chunkLen + ' / ' + this._maxChunkLength);
+        }
 		var i;
-		for (i = 0; i < ZEROBYTES; i++) this._in[i] = 0;
+		for (i = 0; i < ZEROBYTES; i++) {
+            this._in[i] = 0;
+        }
 		this._in.set(chunk, ZEROBYTES);
 		if (isLast) {
 			setLastChunkFlag(this._fullNonce);
@@ -115,22 +139,38 @@
 	};
 
 	StreamDecryptor.prototype.decryptChunk = function(encryptedChunk, isLast) {
-		if (this._failed) return null;
-		if (this._done) throw new Error('called decryptChunk after last chunk');
+		if (this._failed) {
+            return null;
+        }
+		if (this._done) {
+            throw new Error('called decryptChunk after last chunk');
+        }
 		var encryptedChunkLen = encryptedChunk.length;
-		if (encryptedChunkLen < 4 + BOXZEROBYTES) return this._fail();
+		if (encryptedChunkLen < 4 + BOXZEROBYTES) {
+            return this._fail();
+        }
 		var chunkLen = readChunkLength(encryptedChunk);
-		if (chunkLen < 0 || chunkLen > this._maxChunkLength) return this._fail();
-		if (chunkLen + 4 + BOXZEROBYTES !== encryptedChunkLen) return this._fail();
+		if (chunkLen < 0 || chunkLen > this._maxChunkLength) {
+            return this._fail();
+        }
+		if (chunkLen + 4 + BOXZEROBYTES !== encryptedChunkLen) {
+            return this._fail();
+        }
 		var i;
-		for (i = 0; i < BOXZEROBYTES; i++) this._in[i] = 0;
-		for (i = 0; i < encryptedChunkLen-4; i++) this._in[BOXZEROBYTES+i] = encryptedChunk[i+4];
+		for (i = 0; i < BOXZEROBYTES; i++) {
+            this._in[i] = 0;
+        }
+		for (i = 0; i < encryptedChunkLen-4; i++) {
+            this._in[BOXZEROBYTES+i] = encryptedChunk[i+4];
+        }
 		if (isLast) {
 			setLastChunkFlag(this._fullNonce);
 			this._done = true;
 		}
 		if (crypto_secretbox_open(this._out, this._in, encryptedChunkLen+BOXZEROBYTES-4,
-			this._fullNonce, this._key) !== 0) return this._fail();
+			this._fullNonce, this._key) !== 0) {
+            return this._fail();
+        }
 		incrementChunkCounter(this._fullNonce);
 		return new Uint8Array(this._out.subarray(ZEROBYTES, ZEROBYTES + chunkLen));
 	};
