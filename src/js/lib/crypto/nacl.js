@@ -1,3 +1,7 @@
+// jshint -W106
+// jshint -W116
+// jshint -W117
+
 (function(nacl) {
 'use strict';
 

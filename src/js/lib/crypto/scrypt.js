@@ -1,3 +1,5 @@
+// jshint -W106
+
 /*!
  * Fast "async" scrypt implementation in JavaScript.
  * Copyright (c) 2013-2014 Dmitry Chestnykh | BSD License
@@ -399,7 +401,9 @@ function scrypt(password, salt, logN, r, dkLen, interruptStep, callback, encodin
     V = [];
     tmp = new Array(16);
   }
+// jshint -W064
   B = PBKDF2_HMAC_SHA256_OneIter(password, salt, p*128*r);
+// jshint +W064
 
   var xi = 0, yi = 32 * r;
 
@@ -471,7 +475,9 @@ function scrypt(password, salt, logN, r, dkLen, interruptStep, callback, encodin
   interruptedFor(0, N, interruptStep*2, smixStep1, function() {
     interruptedFor(0, N, interruptStep*2, smixStep2, function () {
       smixFinish();
+// jshint -W064
       var result = PBKDF2_HMAC_SHA256_OneIter(password, B, dkLen);
+// jshint +W064
       if (encoding === 'base64') {
         callback(bytesToBase64(result));
       } else if (encoding === 'hex') {

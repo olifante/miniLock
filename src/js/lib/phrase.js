@@ -1,3 +1,5 @@
+// jshint -W033
+
 // miniLock.phrase is a library that returns n-word passphrases,
 // randomly picked from the 58,110 most-used words in the English language.
 // With this many words, a 7-word passphrase is enough to guarantee

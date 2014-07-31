@@ -1,3 +1,5 @@
+// jshint -W033
+
 var miniLock
 
 (function() {
@@ -94,9 +96,9 @@ miniLock.util.isFilenameSuspicious = function(filename) {
 
 miniLock.crypto = {}
 
-// The crypto worker performs encryption operations in the 
+// The crypto worker performs encryption operations in the
 // background. Its source file is `js/workers/crypto.js`.
-// miniLock.crypto.worker() returns a reference to the crypto 
+// miniLock.crypto.worker() returns a reference to the crypto
 // worker (and it automatically constructs one when needed).
 miniLock.crypto.worker = function() {
 	var pathToSource = miniLock.settings.pathToSourceFiles
