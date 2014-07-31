@@ -208,7 +208,7 @@ miniLock.UI.handleFileSelection = function(file) {
 		])
 		var operation = 'decrypt'
 		var first8Bytes = (new Uint8Array(result.data)).subarray(0, 8)
-        var i
+		var i
 		for (i = 0; i < first8Bytes.length; i++) {
 			if (first8Bytes[i] !== miniLockFileYes[i]) {
 				operation = 'encrypt'

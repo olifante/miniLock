@@ -59,7 +59,7 @@ var validateID = function(id) {
 // Output: Boolean
 // Notes: Validates if string is a proper nonce.
 var validateNonce = function(nonce, expectedLength) {
-    'use strict'
+	'use strict'
 	if (
 		(nonce.length > 40) ||
 		(nonce.length < 10)
@@ -96,22 +96,22 @@ var validateEphemeral = validateKey
 // Input: Number
 // Output: Number as 4-byte Uint8Array
 var numberToByteArray = function(n) {
-    'use strict'
-    var byteArray = [0, 0, 0, 0]
-    var i
-    for (i = byteArray.length - 1; i >= 0; i--) {
-        byteArray[i] = n & 255
+	'use strict'
+	var byteArray = [0, 0, 0, 0]
+	var i
+	for (i = byteArray.length - 1; i >= 0; i--) {
+		byteArray[i] = n & 255
 		n = n >> 8
-    }
-    return new Uint8Array(byteArray)
+	}
+	return new Uint8Array(byteArray)
 }
 
 // Input: 4-byte Uint8Array
 // Output: ByteArray converter to number
 var byteArrayToNumber = function(byteArray) {
-    'use strict'
+	'use strict'
 	var n = 0
-    var i
+	var i
 	for (i = 0; i < byteArray.length; i++) {
 		n += byteArray[i]
 		if (i < byteArray.length-1) {
@@ -242,7 +242,7 @@ if (message.operation === 'encrypt') {
 			numberToByteArray(header.length),
 			header
 		]
-        var c
+		var c
 		for (c = 0; c < message.data.length; c += chunkSize) {
 			var encryptedChunk
 			if (c >= (message.data.length - chunkSize)) {
@@ -338,8 +338,8 @@ if (message.operation === 'decrypt') {
 		var actualFileKey   = null
 		var actualFileName  = null
 		var actualFileNonce = null
-        var i
-        /*jslint forin: true */
+		var i
+		/*jslint forin: true */
 		for (i in header.fileInfo) {
 			if (
 				({}).hasOwnProperty.call(header.fileInfo, i)
@@ -380,7 +380,7 @@ if (message.operation === 'decrypt') {
 				}
 			}
 		}
-        /*jslint forin: false */
+		/*jslint forin: false */
 		if (!actualFileInfo) {
 			postMessage({
 				operation: 'decrypt',
@@ -457,7 +457,7 @@ if (message.operation === 'decrypt') {
 			chunkSize
 		)
 		var decrypted = []
-        var c
+		var c
 		for (c = 0; c < message.data.length; c += (4 + 16 + chunkSize)) {
 			var decryptedChunk
 			if (c >= (message.data.length - (4 + 16 + chunkSize))) {

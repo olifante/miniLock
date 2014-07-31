@@ -129,7 +129,7 @@ miniLock.crypto.workerOnMessage = function(message) {
 		var context = window
 		var namespaces = message.callback.split('.')
 		var func = namespaces.pop()
-        var i
+		var i
 		for (i = 0; i < namespaces.length; i++) {
 			context = context[namespaces[i]]
 		}
@@ -209,7 +209,7 @@ miniLock.crypto.getMiniLockID = function(publicKey) {
 		return false
 	}
 	var id = new Uint8Array(33)
-    var i
+	var i
 	for (i = 0; i < publicKey.length; i++) {
 		id[i] = publicKey[i]
 	}
