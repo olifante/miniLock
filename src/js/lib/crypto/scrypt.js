@@ -436,9 +436,9 @@ function scrypt(password, salt, logN, r, dkLen, interruptStep, callback, encodin
     interruptedFor(0, N, interruptStep*2, smixStep2, function () {
       smixFinish();
       var result = PBKDF2_HMAC_SHA256_OneIter(password, B, dkLen);
-      if (encoding === "base64")
+      if (encoding === 'base64')
         callback(bytesToBase64(result));
-      else if (encoding === "hex")
+      else if (encoding === 'hex')
         callback(bytesToHex(result));
       else
         callback(result);
