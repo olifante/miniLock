@@ -14,15 +14,19 @@ $(window).load(function() {
 		miniLock.UI.start()
 		// Pickup input file from the background page and save it
 		// for the moment when miniLock is unlocked.
-		if (window.chrome.runtime) {
-			window.chrome.runtime.getBackgroundPage(function(page){
-				if (page.inputFileEntry) {
-					page.inputFileEntry.file(function(file){
-						miniLock.UI.readFile = file
-					})
-				}
-			})
+		if (
+			!window.hasOwnProperty('chrome')
+			|| !window.chrome.hasOwnProperty('runtime')
+		) {
+			return
 		}
+		window.chrome.runtime.getBackgroundPage(function(page) {
+			if (page.inputFileEntry) {
+				page.inputFileEntry.file(function(file) {
+					miniLock.UI.readFile = file
+				})
+			}
+		})
 	}
 })
 
@@ -577,7 +581,8 @@ $('form.process').on('mouseover mouseout', 'a.fileSaveLink', function(){
 // End of miniLock.UI.setup()
 
 // Remove these classes to reset the file processing <form>.
-miniLock.UI.resetProcessFormClasses = 'unprocessed withSuspectFilename withoutMyMiniLockID '
+miniLock.UI.resetProcessFormClasses = ''
+	+ 'unprocessed withSuspectFilename withoutMyMiniLockID '
 	+ 'encrypting decrypting '
 	+ 'encrypted decrypted '
 	+ 'encrypt decrypt failed '

@@ -183,10 +183,10 @@ miniLock.crypto.checkKeyStrength = function(key) {
 //  secretKey: Secret encryption key (Uint8Array)
 // }
 miniLock.crypto.getKeyPair = function(key, salt) {
-	key = new BLAKE2s(32)
-	key.update(nacl.util.decodeUTF8(key))
+	var keyHash = new BLAKE2s(32)
+	keyHash.update(nacl.util.decodeUTF8(key))
 	salt = nacl.util.decodeUTF8(salt)
-	miniLock.crypto.getScryptKey(key.digest(), salt, function(keyBytes) {
+	miniLock.crypto.getScryptKey(keyHash.digest(), salt, function(keyBytes) {
 		miniLock.session.keys = nacl.box.keyPair.fromSecretKey(keyBytes)
 		miniLock.session.keyPairReady = true
 	})
@@ -244,11 +244,11 @@ miniLock.crypto.encryptFile = function(
 	callback
 ) {
 	saveName += '.minilock'
-	var decryptInfoNonces = []
 	var i
 	// We are generating the nonces here simply because we cannot do that securely
 	// inside the web worker due to the lack of CSPRNG access.
-	for (i = 0; i < miniLockIDs.length; i++) {
+	var decryptInfoNonces = []
+	for (var i = 0; i < miniLockIDs.length; i++) {
 		decryptInfoNonces.push(
 			miniLock.crypto.getNonce()
 		)

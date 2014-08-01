@@ -17,17 +17,17 @@ QUnit.asyncTest('deriveKey', function(assert) {
 			assert.deepEqual(miniLock.session.keys.secretKey.length, 32, 'Secret key length')
 			assert.deepEqual(
 				Base58.encode(miniLock.session.keys.publicKey),
-				'EoMihYnxLnSmFqefztUmf3CFSGHbCk9bLPBSoQuRGftm',
+				'EWVHJniXUFNBC9RmXe45c8bqgiAEDoL3Qojy2hKt4c4e',
 				'Public key Base58 representation'
 			)
 			assert.deepEqual(
 				nacl.util.encodeBase64(miniLock.session.keys.secretKey),
-				'vlgSD4BBZPfpbHXc84Acg3QTMxmeB8W6s+Wme+F4YHk=',
+				'6rcsdGAhF2rIltBRL+gwvQTQT7JMyei/d2JDrWoo0yw=',
 				'Secret key Base64 representation'
 			)
 			assert.deepEqual(
 				miniLock.crypto.getMiniLockID(miniLock.session.keys.publicKey),
-				'23ucT3yKqGKaiLVjH8WDa6tgeiWUDxqSvYYu6srWN8AfVo',
+				'22d9pyWnHVGQTzCCKYEYbL4YmtGfjMVV3e5JeJUzLNum8A',
 				'miniLock ID from public key'
 			)
 			QUnit.start()

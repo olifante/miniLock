@@ -31,7 +31,7 @@ This section outlines an example user flow in order to help demonstrate how mini
 Alice wants to send a scan of her passport to Bob. Sending it over email would compromise personal information, so Alice decided to first encrypt the scan using miniLock.
 
 Bob opens miniLock and enters his email address and passphrase. miniLock displays his miniLock ID, which is tied to his passphrase and is persistent. He sends Alice his miniLock ID, which looks something like this:
-`3ySTY2wzyvH83iDWDb4oAUmwQi3xnX1anaP9MX3tJsuGw`
+`quBSaJLXKsRiaSrhgkPnswKocth711H29ZamMi1H9j4Mb`
 
 Alice drags and drops her passport scan into miniLock and enters Bob's miniLock ID as the recipient. She clicks the encrypt button and sends the resulting `.minilock` file to Bob. Once Bob drags the encrypted file into miniLock, it automatically detects it as a miniLock-encrypted file destined to Bob, and decrypts and saves the passport scan on his computer.
 
@@ -81,17 +81,15 @@ decryptInfo: {
 	(One copy of the below object for every recipient)
 	Unique nonce for decrypting this object (Base64): {
 		senderID: Sender's miniLock ID (Base58),
+		recipientID: miniLock ID of this recipient (used for verfication) (Base58),
 		fileInfo: {
 			fileKey: Key for file decryption (Base64),
 			fileNonce: Nonce for file decryption (Base64),
-			fileName: File's original filename (padded, see notes) (String),
 			fileHash: BLAKE2 hash (32 bytes) of the ciphertext bytes. (Base64)
 		} (fileInfo is encrypted to recipient's public key using long-term key pair) (Base64),
 	} (encrypted to recipient's public key using ephemeral key pair) (Base64)
 }
 ```
-
-Note that in the above header, `fileName` is padded with the `0x00` byte until it reaches 256 bytes in length.
 
 Note that the nonce used to encrypt `decryptInfo` is the same as the one used to encrypt `fileInfo`. Nonce reuse in this scenario is permitted since we are encrypting using different keys.
 
@@ -103,6 +101,8 @@ The sender's long-term keys are denoted as `senderSecret` and `senderPublic`.
 A recipient `a`'s long-term keys are denoted as `recipientSecret[a]` and `recipientPublic[a]`.
 
 The sender appends the bytes signalling the beginning of the header to the final encrypted file.
+
+The file's filename is padded with 0x00 bytes until its length equals 256 bytes. The filename is then prepended to the plaintext prior to encryption. The filename is encrypted as its own 256-byte chunk (see chunking format below).
 
 A random 32-byte `fileKey` and a random 16-byte `fileNonce` are generated and used to symmetrically encrypt the plaintext bytes using TweetNaCL's `xsalsa20-poly1305` construction. We encrypt the plaintext bytes by splitting the plaintext into 1048576-byte chunks. Each chunk is then encrypted using the following model:
 
@@ -122,7 +122,7 @@ fullNonceN = fileNonce || setMostSignificantBit(N)
 encryptedChunkN = length(chunkN) || nacl.secretbox(chunkN, fullNonceN, fileKey)
 ```
 
-The sender generates a `fileInfo` JSON object containing `fileKey`, `fileNonce`, `fileName` and `fileHash`. For every recipient `n`, the sender encrypts `fileInfo` using `senderSecret` and `recipientPublic[n]` and stores it within a `decryptInfo` object inside the JSON header along with `senderID`, as described in §3.
+The sender generates a `fileInfo` JSON object containing `fileKey`, `fileNonce` and `fileHash`. For every recipient `n`, the sender encrypts `fileInfo` using `senderSecret` and `recipientPublic[n]` and stores it within a `decryptInfo` object inside the JSON header along with `senderID`, as described in §3.
 
 The name of the `decryptInfo` property in which the aforementioned elements are stored is a 24-byte nonce. The sender uses this nonce, along with `senderEphemeralSecret`, to encrypt the underlying JSON object asymmetrically to `recipientPublic[n]`, using TweetNaCL's `curve25519-xsalsa20-poly1305` construction. Note that this is done once for every recipient, creating a different `decryptInfo` object for every recipient, each labeled by their unique nonces.
 
@@ -135,6 +135,8 @@ In order to decrypt the file, the recipient needs the information stored within 
 
 If there are multiple properties within `decryptInfo`, the recipient must iterate through every property until she obtains an authenticated decryption of the underlying object. Once a successful authenticated decryption of a `decryptInfo` property occurs, the recipient can then use the obtained `senderID` along with their long-term secret key to decrypt `fileKey` and use it in conjunction with `fileNonce` to perform an authenticated decryption of the ciphertext bytes.
 
+Before any file decryption, the recipient compares the 32-byte `BLAKE2` hash of the ciphertext against the decrypted `fileHash`. The recipient also compares the decrypted `recipientID` against their own miniLock ID. If any of these checks fail, decryption is aborted and an error is returned.
+
 In order to decrypt the ciphertext bytes, the recipient breaks the ciphertext down to chunks consisting of the original 1048576 bytes of the plaintext chunk, plus the 4 bytes defining the chunk length and the 16 bytes defining the `poly1305` authentication code of that particular ciphertext chunk. Each chunk is then decrypted sequentially using the following model:
 
 ```javascript
@@ -145,11 +147,9 @@ decryptedChunk1 = nacl.secretbox.open(chunk1, fullNonce1, fileKey)
 ...
 ```
 
-Before any file decryption, we compare the 32-byte `BLAKE2` hash of the ciphertext against the decrypted `fileHash`.
+After decryption, the recipient retrieves the filename from the first 256 bytes of the plaintext. The recipient strips the padding bytes from the filename and is now capable of saving the decrypted file.
 
-The recipient then removes the padding of `0x00` bytes from the decrypted `fileName` in order to obtain the intended file name. The recipient is now capable of saving the decrypted file.
-
-If the authenticated asymmetric decryption of any header object fails, or the authenticated symmetric decryption of the file ciphertext fails, we return an error to the user and halt decryption. No partial data is returned.
+If the authenticated asymmetric decryption of any header object fails, or the authenticated symmetric decryption of the file ciphertext fails, decryption is aborted and an error is returned.
 
 ###6. Key Identity Authentication
 In PGP, public keys can be substantially larger than miniLock IDs, therefore necessitating the generation of key fingerprints which can then be used for out-of-band key identity authentication. With miniLock, users are able to authenticate out-of-band directly using the miniLock ID, due to its small length (approximately 45 Base58-encoded characters). Therefore, no specialized key identity authentication mechanism is required.

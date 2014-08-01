@@ -34,7 +34,7 @@ QUnit.asyncTest('encryptDecryptFile', function(assert) {
 	xhr.send()
 	miniLock.test.encryptFileCallback = function(message) {
 		assert.deepEqual(message.name, 'test.jpg', 'Original file name')
-		assert.deepEqual(message.blob.size, 349423, 'Encrypted file size')
+		assert.deepEqual(message.blob.size, 349779, 'Encrypted file size')
 		assert.deepEqual(message.saveName, 'test.jpg.minilock', 'Encrypted file name')
 		miniLock.file.get(message.blob, function(result) {
 			result.name = 'userHasChangedTheName.minilock'
