@@ -1,6 +1,8 @@
+// jshint -W098
+
 var BLAKE2s = (function () {
     function BLAKE2s(digestLength, key) {
-	if (typeof digestLength === "undefined") { digestLength = 32; }
+	if (typeof digestLength === 'undefined') { digestLength = 32; }
 	this.isFinished = false;
 	this.digestLength = 32;
 	this.blockLength = 64;
@@ -15,10 +17,10 @@ var BLAKE2s = (function () {
 	    throw 'digestLength is too large';
 	}
 	var keyLength = 0;
-	if (typeof key == 'string') {
+	if (typeof key === 'string') {
 	    key = this.stringToUtf8Array(key);
 	    keyLength = key.length;
-	} else if (typeof key == 'object') {
+	} else if (typeof key === 'object') {
 	    keyLength = key.length;
 	}
 	if (keyLength > 32) {
@@ -39,11 +41,12 @@ var BLAKE2s = (function () {
 	this.nx = 0;
 	this.digestLength = digestLength;
 
+    var i;
 	if (keyLength > 0) {
-	    for (var i = 0; i < keyLength; i++) {
+	    for (i = 0; i < keyLength; i++) {
 		this.x[i] = key[i];
 	    }
-	    for (var i = keyLength; i < 64; i++) {
+	    for (i = keyLength; i < 64; i++) {
 		this.x[i] = 0;
 	    }
 	    this.nx = 64;
@@ -62,7 +65,7 @@ var BLAKE2s = (function () {
 
     BLAKE2s.prototype.processBlock = function (length) {
 	this.t0 += length;
-	if (this.t0 != this.t0 >>> 0) {
+	if (this.t0 !== this.t0 >>> 0) {
 	    this.t0 = 0;
 	    this.t1++;
 	}
@@ -1223,7 +1226,8 @@ var BLAKE2s = (function () {
 
     BLAKE2s.prototype.stringToUtf8Array = function (s) {
 	var arr = [];
-	for (var i = 0; i < s.length; i++) {
+    var i;
+	for (i = 0; i < s.length; i++) {
 	    var c = s.charCodeAt(i);
 	    if (c < 128) {
 		arr.push(c);
@@ -1240,27 +1244,28 @@ var BLAKE2s = (function () {
     };
 
     BLAKE2s.prototype.update = function (p, offset, length) {
-	if (typeof offset === "undefined") { offset = 0; }
-	if (typeof length === "undefined") { length = p.length; }
+	if (typeof offset === 'undefined') { offset = 0; }
+	if (typeof length === 'undefined') { length = p.length; }
 	if (this.isFinished) {
 	    throw 'update() after calling digest()';
 	}
-	if (typeof p == 'string') {
-	    if (offset != 0) {
+	if (typeof p === 'string') {
+	    if (offset !== 0) {
 		throw 'offset not supported for strings';
 	    }
 	    p = this.stringToUtf8Array(p);
 	    length = p.length;
 	    offset = 0;
-	} else if (typeof p != 'object') {
+	} else if (typeof p !== 'object') {
 	    throw 'unsupported object: string or array required';
 	}
-	if (length == 0) {
+	if (length === 0) {
 	    return;
 	}
 	var left = 64 - this.nx;
+    var i;
 	if (length > left) {
-	    for (var i = 0; i < left; i++) {
+	    for (i = 0; i < left; i++) {
 		this.x[this.nx + i] = p[offset + i];
 	    }
 	    this.processBlock(64);
@@ -1269,7 +1274,7 @@ var BLAKE2s = (function () {
 	    this.nx = 0;
 	}
 	while (length > 64) {
-	    for (var i = 0; i < 64; i++) {
+	    for (i = 0; i < 64; i++) {
 		this.x[i] = p[offset + i];
 	    }
 	    this.processBlock(64);
@@ -1277,7 +1282,7 @@ var BLAKE2s = (function () {
 	    length -= 64;
 	    this.nx = 0;
 	}
-	for (var i = 0; i < length; i++) {
+	for (i = 0; i < length; i++) {
 	    this.x[this.nx + i] = p[offset + i];
 	}
 	this.nx += length;
@@ -1288,7 +1293,8 @@ var BLAKE2s = (function () {
 	    return this.result;
 	}
 
-	for (var i = this.nx; i < 64; i++) {
+    var i;
+	for (i = this.nx; i < 64; i++) {
 	    this.x[i] = 0;
 	}
 
@@ -1299,7 +1305,7 @@ var BLAKE2s = (function () {
 	this.processBlock(this.nx);
 
 	var out = new Array(32);
-	for (var i = 0; i < 8; i++) {
+	for (i = 0; i < 8; i++) {
 	    var h = this.h[i];
 	    out[i * 4 + 0] = (h >>> 0) & 0xff;
 	    out[i * 4 + 1] = (h >>> 8) & 0xff;
@@ -1315,7 +1321,8 @@ var BLAKE2s = (function () {
 	var hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
 	var out = [];
 	var d = this.digest();
-	for (var i = 0; i < d.length; i++) {
+    var i;
+	for (i = 0; i < d.length; i++) {
 	    out.push(hex[(d[i] >> 4) & 0xf]);
 	    out.push(hex[d[i] & 0xf]);
 	}

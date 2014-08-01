@@ -244,11 +244,11 @@ miniLock.crypto.encryptFile = function(
 	callback
 ) {
 	saveName += '.minilock'
-	var i
 	// We are generating the nonces here simply because we cannot do that securely
 	// inside the web worker due to the lack of CSPRNG access.
 	var decryptInfoNonces = []
-	for (var i = 0; i < miniLockIDs.length; i++) {
+    var i
+	for (i = 0; i < miniLockIDs.length; i++) {
 		decryptInfoNonces.push(
 			miniLock.crypto.getNonce()
 		)
