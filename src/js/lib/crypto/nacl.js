@@ -1579,17 +1579,23 @@ nacl.sign = function(msg, secretKey) {
 };
 
 nacl.sign.open = function(signedMsg, publicKey) {
-  if (arguments.length !== 2)
+  if (arguments.length !== 2) {
     throw new Error('nacl.sign.open accepts 2 arguments; did you mean to use nacl.sign.detached.verify?');
+  }
   checkArrayTypes(signedMsg, publicKey);
-  if (publicKey.length !== crypto_sign_PUBLICKEYBYTES)
+  if (publicKey.length !== crypto_sign_PUBLICKEYBYTES) {
     throw new Error('bad public key size');
+  }
   var tmp = new Uint8Array(signedMsg.length);
   var mlen = crypto_sign_open(tmp, signedMsg, signedMsg.length, publicKey);
-  if (mlen < 0) return null;
+  if (mlen < 0) {
+    return null;
+  }
   var m = new Uint8Array(mlen);
   var i;
-  for (i = 0; i < m.length; i++) m[i] = tmp[i];
+  for (i = 0; i < m.length; i++) {
+    m[i] = tmp[i];
+  }
   return m;
 };
 
@@ -1597,7 +1603,9 @@ nacl.sign.detached = function(msg, secretKey) {
   var signedMsg = nacl.sign(msg, secretKey);
   var sig = new Uint8Array(crypto_sign_BYTES);
   var i;
-  for (i = 0; i < sig.length; i++) sig[i] = signedMsg[i];
+  for (i = 0; i < sig.length; i++) {
+    sig[i] = signedMsg[i];
+  }
   return sig;
 };
 
