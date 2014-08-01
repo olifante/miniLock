@@ -1328,4 +1328,4 @@ var BLAKE2s = (function () {
 	return out.join('');
     };
     return BLAKE2s;
-})();
+}());
