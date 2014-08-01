@@ -1,12 +1,11 @@
-// jshint -W033
 // -----------------------
 // Initialization
 // -----------------------
 'use strict'
 
-/*jshint -W079 */
+// jshint -W079
 var window = {}
-/*jshint +W079 */
+// jshint +W079
 importScripts(
 	'../lib/crypto/nacl.js'
 )

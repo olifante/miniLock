@@ -1,5 +1,3 @@
-// jshint -W033
-
 var miniLock
 
 (function() {

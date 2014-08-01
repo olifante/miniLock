@@ -1,5 +1,3 @@
-// jshint -W098
-
 var BLAKE2s = (function () {
     function BLAKE2s(digestLength, key) {
 	if (typeof digestLength === 'undefined') { digestLength = 32; }

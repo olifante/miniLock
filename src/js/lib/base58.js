@@ -1,5 +1,3 @@
-// jshint -W033
-
 // Base58 encoding/decoding
 // Originally written by Mike Hearn for BitcoinJ
 // Copyright (c) 2011 Google Inc

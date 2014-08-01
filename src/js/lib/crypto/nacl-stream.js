@@ -1,4 +1,3 @@
-// jshint -W116
 // jshint -W106
 
 /*
