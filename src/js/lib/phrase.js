@@ -3,7 +3,7 @@
 // With this many words, a 7-word passphrase is enough to guarantee
 // ~111 bits of entropy (10000^7 ~= 2^111)
 (function() {
-'use strict'
+'use strict';
 
 miniLock.phrase = {}
 

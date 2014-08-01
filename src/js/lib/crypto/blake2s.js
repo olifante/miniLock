@@ -1,4 +1,5 @@
 var BLAKE2s = (function () {
+    'use strict';
     function BLAKE2s(digestLength, key) {
 	if (typeof digestLength === 'undefined') { digestLength = 32; }
 	this.isFinished = false;

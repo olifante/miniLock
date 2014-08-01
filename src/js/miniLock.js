@@ -1,7 +1,7 @@
 var miniLock
 
 (function() {
-'use strict'
+'use strict';
 
 miniLock = {}
 

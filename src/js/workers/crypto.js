@@ -1,7 +1,7 @@
 // -----------------------
 // Initialization
 // -----------------------
-'use strict'
+'use strict';
 
 // jshint -W079
 var window = {}
@@ -36,7 +36,6 @@ var base58Match = new RegExp(
 // Output: Boolean
 // Notes: Validates if string is a proper miniLock ID.
 var validateID = function(id) {
-	'use strict'
 	if (
 		(id.length > 55) ||
 		(id.length < 40)
@@ -62,7 +61,6 @@ var validateID = function(id) {
 // Output: Boolean
 // Notes: Validates if string is a proper nonce.
 var validateNonce = function(nonce, expectedLength) {
-	'use strict'
 	if (
 		(nonce.length > 40) ||
 		(nonce.length < 10)
@@ -80,7 +78,6 @@ var validateNonce = function(nonce, expectedLength) {
 // Output: Boolean
 // Notes: Validates if string is a proper symmetric key.
 var validateKey = function(key) {
-	'use strict'
 	if (
 		(key.length > 50) ||
 		(key.length < 40)
@@ -99,7 +96,6 @@ var validateEphemeral = validateKey
 // Input: Number
 // Output: Number as 4-byte Uint8Array
 var numberToByteArray = function(n) {
-	'use strict'
 	var byteArray = [0, 0, 0, 0]
 	var i
 	for (i = byteArray.length - 1; i >= 0; i--) {
@@ -112,7 +108,6 @@ var numberToByteArray = function(n) {
 // Input: 4-byte Uint8Array
 // Output: ByteArray converter to number
 var byteArrayToNumber = function(byteArray) {
-	'use strict'
 	var n = 0
 	var i
 	for (i = 0; i < byteArray.length; i++) {
@@ -179,7 +174,6 @@ var byteArrayToNumber = function(byteArray) {
 //	Nonce reuse in this scenario is permitted since we are encrypting using different keys.
 //	The ciphertext in binary format is appended after the header.
 onmessage = function(message) {
-'use strict'
 message = message.data
 
 // We have received a request to encrypt

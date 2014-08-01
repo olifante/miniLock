@@ -16,7 +16,7 @@ for(i = 0; i < Base58.alphabet.length; i++) {
 }
 
 Base58.encode = function(buffer) {
-  'use strict'
+  'use strict';
   if (buffer.length === 0) {
       return ''
   }
@@ -51,7 +51,7 @@ Base58.encode = function(buffer) {
 }
 
 Base58.decode = function(string) {
-  'use strict'
+  'use strict';
   if (string.length === 0) {
       return (new Uint8Array())
   }
